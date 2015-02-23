@@ -5,7 +5,7 @@
 
 pkgname=cdm-git
 _pkgname="cdm"
-pkgver=2013.04.04
+pkgver=2014.08.04
 pkgrel=1
 pkgdesc="The Console Display Manager"
 arch=('any')
