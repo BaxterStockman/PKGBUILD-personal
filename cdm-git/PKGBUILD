@@ -5,7 +5,7 @@
 
 pkgname=cdm-git
 _pkgname="cdm"
-pkgver=2014.08.04
+pkgver=2015.02.15
 pkgrel=1
 pkgdesc="The Console Display Manager"
 arch=('any')
@@ -16,7 +16,7 @@ depends=('dialog' 'xorg-xinit' 'xorg-xdpyinfo' 'kbd')
 provides=('cdm')
 conflicts=('cdm')
 backup=('etc/cdmrc')
-source=('git://github.com/ghost1227/cdm.git')
+source=('git://github.com/BaxterStockman/cdm.git')
 md5sums=('SKIP')
 epoch=1
 
