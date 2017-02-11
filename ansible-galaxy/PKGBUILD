@@ -1,0 +1,68 @@
+# Maintainer: Matt Schreiber <schreibah@gmail.com>
+
+pkgname=ansible-container
+pkgver=0.2.0
+pkgrel=1
+pkgdesc='A tool to build Docker images and orchestrate containers using only Ansible playbooks'
+arch=('any')
+url='http://www.ansible.com/ansible-container'
+license=('GPL3')
+depends=('ansible' 'docker-compose2' 'python2-docker-py' 'python2-jinja'
+         'python2-yaml' 'python2-requests' 'python2-six')
+makedepends=('git' 'asciidoc' 'fakeroot' 'python2-pip' 'python2-sphinx')
+checkdepends=('python2-virtualenv')
+conflicts=('ansible-container-git')
+provides=('ansible-container')
+source=("${pkgname}-release-${pkgver}.tar.gz::https://github.com/${pkgname}/${pkgname}/archive/release-${pkgver}.tar.gz")
+md5sums=('b7466d628bf7999c87df6a322b1297f5')
+
+prepare() {
+  cd "${srcdir}/${pkgname}-release-${pkgver}"
+
+  # Remove upper bound on requires
+  sed -i 's/==/>=/g' requirements.txt
+  sed -i "s/, < .*',$/',/" setup.py
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-release-${pkgver}"
+  python2 setup.py build
+  cd docs
+  make SPHINXBUILD=sphinx-build2 BUILDDIR="${srcdir}/${pkgname}-release-${pkgver}" man
+}
+
+check() (
+  cd "${srcdir}/${pkgname}-release-${pkgver}"
+
+  checkdir="$(mktemp -d)"
+  trap "rm -rf ${checkdir}" RETURN EXIT
+
+  virtualenv2 "${checkdir}" --no-pip --system-site-packages --always-copy
+  source "${checkdir}/bin/activate"
+  python2 setup.py develop -O1
+  make PYTHON=python2 test
+)
+
+package() {
+  cd "${srcdir}/${pkgname}-release-${pkgver}"
+
+  install -dm755 "${pkgdir}/usr/share/${pkgname}"
+
+  python2 setup.py install -O1 --root="${pkgdir}"
+
+  install -Dm644 AUTHORS "${pkgdir}/usr/share/doc/${pkgname}/AUTHORS"
+  install -Dm644 CONTRIBUTORS.md "${pkgdir}/usr/share/doc/${pkgname}/CONTRIBUTORS.md"
+  install -Dm644 EXAMPLES.md "${pkgdir}/usr/share/doc/${pkgname}/EXAMPLES.md"
+  install -Dm644 LICENSE "${pkgdir}/usr/share/doc/${pkgname}/LICENSE"
+
+  install -dm755 "${pkgdir}/usr/share/man/man1"
+  install -Dm644 man/*.1 "${pkgdir}/usr/share/man/man1"
+
+#  cat > "${pkgdir}/usr/bin/ansible-container" <<ANSIBLE_CONTAINER
+##!/usr/bin/python2
+#
+#import container.cli
+#
+#container.cli.commandline()
+#ANSIBLE_CONTAINER
+}
