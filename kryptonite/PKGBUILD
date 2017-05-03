@@ -1,0 +1,54 @@
+# $Id: PKGBUILD 192732 2016-10-20 14:41:09Z felixonmars $
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+
+pkgname=kryptonite
+pkgver=2.0.4
+pkgrel=1
+pkgdesc="SSH using a key stored in Kryptonite"
+arch=('i686' 'x86_64')
+url="https://krypt.ko"
+license=('MIT')
+provides=('kryptonite' 'kr' 'krd')
+depends=()
+#makedepends=('git' 'gcc-go' 'cargo' 'perl' 'rust>=1.15')
+makedepends=('git' 'cargo' 'perl' 'rust>=1.15' 'go>=1.5')
+source=("https://github.com/KryptCo/kr/archive/${pkgver}.tar.gz")
+md5sums=('SKIP')
+
+prepare() {
+  cd "kr-${pkgver}"
+  install -d .gopath
+  [[ -e .gopath/src ]] || mv vendor .gopath/src
+  ln -sf "$PWD" .gopath/src/github.com/kryptco/kr
+  export GOPATH="${PWD}/.gopath"
+}
+
+check() {
+  export GOPATH="${PWD}/kr-${pkgver}/.gopath"
+  cd "${GOPATH}/src/github.com/kryptco/kr"
+  make check
+}
+
+build() {
+  export GOPATH="${PWD}/kr-${pkgver}/.gopath"
+  cd "${GOPATH}/src/github.com/kryptco/kr"
+  make PREFIX=/usr
+}
+
+package() {
+  export GOPATH="${PWD}/kr-${pkgver}/.gopath"
+  cd "${GOPATH}/src/github.com/kryptco/kr"
+
+  for binpath in kr krd krssh; do
+    install -Dm755 "bin/${binpath}" "${pkgdir}/usr/bin/${binpath##*/}"
+  done
+
+  install -Dm644 bin/kr-pkcs11.so "${pkgdir}/usr/lib/kr-pkcs11.so"
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+  install -dm755 "${pkgdir}/usr/lib/systemd/system"
+
+  ./install/systemd-service-as-current-user.sh | sed -e 's/^User=/User=%I/' > "${pkgdir}/usr/lib/systemd/system/krd@.service"
+  chmod 644 "${pkgdir}/usr/lib/systemd/system/krd@.service"
+}
