@@ -1,0 +1,20 @@
+# $Id: PKGBUILD 197593 2016-12-01 10:16:11Z heftig $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: FaziBear <fazibear@gmail.com>
+
+pkgname=docker-gen
+pkgver=0.7.3
+pkgrel=1
+pkgdesc="Generate files from docker container meta-data"
+# TODO arm architectures
+arch=('i686' 'x86_64' 'armv7h')
+url="https://github.com/jwilder/docker-gen"
+license=(MIT)
+source_i686=("${url}/releases/download/${pkgver}/docker-gen-linux-i386-${pkgver}.tar.gz")
+source_x86_64=("${url}/releases/download/${pkgver}/docker-gen-linux-amd64-${pkgver}.tar.gz")
+source_armv7h=("${url}/releases/download/${pkgver}/docker-gen-linux-armhf-${pkgver}.tar.gz")
+md5sums_x86_64=('a2436dbf6f4a4c4cfa0dc09aa9ae758c')
+
+package() {
+  install -Dm 0755 docker-gen "${pkgdir}/usr/bin/docker-gen"
+}
